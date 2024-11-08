@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register and Login</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-container {
+            max-width: 500px;
+            margin: 50px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <ul class="nav nav-tabs" id="authTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="register-tab" data-toggle="tab" href="#register" role="tab" aria-controls="register" aria-selected="true">Register</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="login-tab" data-toggle="tab" href="#login" role="tab" aria-controls="login" aria-selected="false">Login</a>
+                </li>
+            </ul>
+            <div class="tab-content" id="authTabContent">
+                <div class="tab-pane fade show active" id="register" role="tabpanel" aria-labelledby="register-tab">
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="registerUsername">Username</label>
+                            <input type="text" class="form-control" id="registerUsername" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Password</label>
+                            <input type="password" class="form-control" id="registerPassword" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Register</button>
+                    </form>
+                </div>
+                <div class="tab-pane fade" id="login" role="tabpanel" aria-labelledby="login-tab">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="loginUsername">Username</label>
+                            <input type="text" class="form-control" id="loginUsername" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Handle register form submission
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+
+            fetch('https://localhost:7171/signup', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Registration succeeded!');
+                } else {
+                    alert('Registration failed!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred!');
+            });
+        });
+
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+
+            fetch('https://localhost:7171/signin', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Login succeeded!');
+                } else {
+                    alert('Login failed!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred!');
+            });
+        });
+    </script>
+</body>
+</html>

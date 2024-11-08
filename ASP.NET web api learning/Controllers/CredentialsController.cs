@@ -3,6 +3,7 @@ using ASP.NET_web_api_learning.models.DbModels;
 using ASP.NET_web_api_learning.models.ProjectModels;
 using ASP.NET_web_api_learning.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ASP.NET_web_api_learning.Controllers
@@ -12,46 +13,49 @@ namespace ASP.NET_web_api_learning.Controllers
     public class CredentialsController : ControllerBase
     {
         readonly AppDbContext _context;
-        readonly HashingService hashingService;
+        readonly HashingService _hashingService;
         public CredentialsController(AppDbContext context, HashingService hashingService) =>
-            (_context, hashingService) = (context, hashingService);
+            (_context, _hashingService) = (context, hashingService);
 
-        [HttpPost]
-        public IActionResult CreateCredential([FromBody] Credentials newCredential)
+        [HttpPost("/signup")]
+        public IActionResult Register([FromForm] Credentials newCredential)
         {
-            if (newCredential == null)
+            if (newCredential == null || string.IsNullOrWhiteSpace(newCredential.username) || string.IsNullOrWhiteSpace(newCredential.password))
             {
                 return BadRequest("Invalid credential data.");
             }
             try
             {
-                Credentials HashedCredentials = new(newCredential) 
+                var hashedPassword = _hashingService.HashPassword(newCredential.password);
+                Credentials hashedCredentials = new(newCredential)
                 {
-                    password = hashingService.HashPassword(newCredential.password) 
+                    password = hashedPassword
                 };
-                _context.Credentials.Add(HashedCredentials);
+                _context.Credentials.Add(hashedCredentials);
                 _context.SaveChanges();
-                return CreatedAtAction(nameof(GetCredentialById), new { id = newCredential.id }, newCredential);
+                return Ok();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, "Internal server error. Please try again later.");
             }
         }
         [HttpGet("{id}")]
         public IActionResult GetCredentialById(int id)
         {
-            var credential = _context.Credentials.Find(id);
+            Credentials? credential = _context.Credentials.Find(id);
             if (credential == null)
             {
                 return NotFound();
             }
             return Ok(credential);
         }
-        [HttpPost("Verify")]
-        public IActionResult VerifyPassword([FromBody] Credentials credentials)
+        [HttpPost("/signin")]
+        public IActionResult Login([FromForm] Credentials credentials)
         {
-            return hashingService.VerifyPassword(credentials) ? ;
+            Credentials? hashedCredentials = _context.Credentials.FirstOrDefault(x => x.username == credentials.username);
+            if (hashedCredentials == null) { return Unauthorized("Can not find such user in database"); }
+            return _hashingService.VerifyPassword(hashedCredentials, credentials) ? Ok("Success") : Unauthorized("Password Not found");
         }
     }
 }
